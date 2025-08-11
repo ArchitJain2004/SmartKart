@@ -3,36 +3,50 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/context/AuthContext';
+import axios from 'axios';
 import { toast } from '@/hooks/use-toast';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      await login(formData.email, formData.password);
+      const { data } = await axios.post(
+        'http://localhost:8800/api/users/login', // Adjust if backend URL is different
+        {
+          email: formData.email,
+          password: formData.password
+        },
+        {
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+
+      // Save token in localStorage
+      localStorage.setItem('userInfo', JSON.stringify(data));
+
       toast({
-        title: "Welcome back!",
-        description: "You have successfully logged in.",
+        title: 'Welcome back!',
+        description: 'You have successfully logged in.',
       });
+
       navigate('/');
-    } catch (error: any) {
+    } catch (error) {
       toast({
-        title: "Login Failed",
-        description: error.response?.data?.message || "Invalid credentials",
-        variant: "destructive",
+        title: 'Login Failed',
+        description:
+          error.response?.data?.message || 'Invalid email or password',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
