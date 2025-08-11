@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/context/AuthContext';
+import axios from 'axios';
 import { toast } from '@/hooks/use-toast';
 
 const Register = () => {
@@ -16,7 +16,6 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,12 +37,18 @@ const Register = () => {
     setLoading(true);
 
     try {
-      await register(formData.name, formData.email, formData.password);
+      const res = await axios.post('http://localhost:8800/api/users/register', {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+      });
+
       toast({
         title: "Account Created!",
-        description: "Welcome to SmartKart! Your account has been created successfully.",
+        description: res.data?.message || "Welcome to SmartKart! Your account has been created successfully.",
       });
-      navigate('/');
+
+      navigate('/login'); // redirect to login after registration
     } catch (error: any) {
       toast({
         title: "Registration Failed",
@@ -66,6 +71,7 @@ const Register = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Name */}
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
                 Full Name
@@ -85,6 +91,7 @@ const Register = () => {
               </div>
             </div>
 
+            {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
                 Email Address
@@ -104,6 +111,7 @@ const Register = () => {
               </div>
             </div>
 
+            {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
                 Password
@@ -130,6 +138,7 @@ const Register = () => {
               </div>
             </div>
 
+            {/* Confirm Password */}
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-2">
                 Confirm Password
@@ -156,6 +165,7 @@ const Register = () => {
               </div>
             </div>
 
+            {/* Terms */}
             <div className="flex items-center">
               <input type="checkbox" required className="mr-2" />
               <span className="text-sm text-muted-foreground">
@@ -170,15 +180,13 @@ const Register = () => {
               </span>
             </div>
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full btn-primary"
-            >
+            {/* Submit */}
+            <Button type="submit" disabled={loading} className="w-full btn-primary">
               {loading ? 'Creating Account...' : 'Create Account'}
             </Button>
           </form>
 
+          {/* Already have account */}
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
               Already have an account?{' '}
